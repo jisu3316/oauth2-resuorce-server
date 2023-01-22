@@ -50,16 +50,21 @@ public class OAuth2ResourceServer {
                 .anyRequest().authenticated());
         http.userDetailsService(userDetailsService());
 
-        // MAC 방식 필터 기반 검증 방법
+        // MAC 방식 토큰 발행
 //        http.addFilterBefore(jwtAuthenticationFilter(null, null), UsernamePasswordAuthenticationFilter.class);
+        // MAC 방식 필터 기반 검증 방법
 //        http.addFilterBefore(jwtAuthorizationMacFilter(null), UsernamePasswordAuthenticationFilter.class);
 
-        // MAC 방식 jwtDecoder에 의한 검증 방법
+        // MAC 방식 jwtDecoder 에 의한 검증 방법
 //        http.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
 
-        // RSA 방식 필터에 기반 검증 방법
+        //RSA 방식 토큰 발행
         http.addFilterBefore(jwtAuthenticationFilter(null, null), UsernamePasswordAuthenticationFilter.class);
-        http.addFilterBefore(jwtAuthorizationRsaFilter(null), UsernamePasswordAuthenticationFilter.class);
+        // RSA 방식 필터에 기반 검증 방법
+//        http.addFilterBefore(jwtAuthorizationRsaFilter(null), UsernamePasswordAuthenticationFilter.class);
+
+        //RSA jwt Decoder 에 의한 검증 방법
+        http.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
         return http.build();
     }
 
@@ -70,7 +75,7 @@ public class OAuth2ResourceServer {
 //    }
 
 
-    //MAC 필터 기반 방식
+    //MAC 필터 기반 방식 토큰 발행
 //    @Bean
 //    public JwtAuthenticationFilter jwtAuthenticationFilter(MacSecuritySigner macSecuritySigner, OctetSequenceKey octetSequenceKey) throws Exception {
 //        JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(macSecuritySigner, octetSequenceKey);
@@ -80,12 +85,12 @@ public class OAuth2ResourceServer {
 
 
     // RSA 필터 기반 검증방법 비 대칭키 방식이므로 퍼블릭키로 토큰을 검증한다.
-    @Bean
-    public JwtAuthorizationRsaFilter jwtAuthorizationRsaFilter(RSAKey rsaKey) throws JOSEException {
-        return new JwtAuthorizationRsaFilter(new RSASSAVerifier(rsaKey.toRSAPublicKey()));
-    }
+//    @Bean
+//    public JwtAuthorizationRsaFilter jwtAuthorizationRsaFilter(RSAKey rsaKey) throws JOSEException {
+//        return new JwtAuthorizationRsaFilter(new RSASSAVerifier(rsaKey.toRSAPublicKey()));
+//    }
 
-//    //RSA 필터 기반 방식
+   //RSA 필터 기반 방식 토큰 발행
     @Bean
     public JwtAuthenticationFilter jwtAuthenticationFilter(RsaSecuritySigner rsaSecuritySigner, RSAKey rsaKey) throws Exception {
         JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(rsaSecuritySigner, rsaKey);

@@ -33,11 +33,12 @@ public class SignatureConfig {
         return new RsaSecuritySigner();
     }
 
+    //jwt-decoder 설정 시 yml의 값이 바뀌면 여기 값도 바뀌어야 한다.
     @Bean
     public RSAKey rsaKey() throws JOSEException {
         RSAKey rsaKey = new RSAKeyGenerator(2048)
                 .keyID("rsaKey")
-                .algorithm(JWSAlgorithm.RS256)
+                .algorithm(JWSAlgorithm.RS512)
                 .generate();
         return rsaKey;
     }
