@@ -59,11 +59,14 @@ public class OAuth2ResourceServer {
 //        http.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
 
         //RSA 방식 토큰 발행
-        http.addFilterBefore(jwtAuthenticationFilter(null, null), UsernamePasswordAuthenticationFilter.class);
+//        http.addFilterBefore(jwtAuthenticationFilter(null, null), UsernamePasswordAuthenticationFilter.class);
         // RSA 방식 필터에 기반 검증 방법
 //        http.addFilterBefore(jwtAuthorizationRsaFilter(null), UsernamePasswordAuthenticationFilter.class);
 
         //RSA jwt Decoder 에 의한 검증 방법
+//        http.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
+
+        //setURI 에 의 한 검증 방법
         http.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
         return http.build();
     }
@@ -91,19 +94,19 @@ public class OAuth2ResourceServer {
 //    }
 
    //RSA 필터 기반 방식 토큰 발행
-    @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter(RsaSecuritySigner rsaSecuritySigner, RSAKey rsaKey) throws Exception {
-        JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(rsaSecuritySigner, rsaKey);
-        jwtAuthenticationFilter.setAuthenticationManager(authenticationManager(null));
-        return jwtAuthenticationFilter;
-    }
+//    @Bean
+//    public JwtAuthenticationFilter jwtAuthenticationFilter(RsaSecuritySigner rsaSecuritySigner, RSAKey rsaKey) throws Exception {
+//        JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(rsaSecuritySigner, rsaKey);
+//        jwtAuthenticationFilter.setAuthenticationManager(authenticationManager(null));
+//        return jwtAuthenticationFilter;
+//    }
 
 
     //인증해주는 곳 얘가 없으면 JwtAuthenticationFilter 생성을 못한다.
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
-    }
+//    @Bean
+//    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+//        return authenticationConfiguration.getAuthenticationManager();
+//    }
 
     @Bean
     public UserDetailsService userDetailsService() {
