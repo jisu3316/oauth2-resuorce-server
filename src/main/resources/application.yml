@@ -7,4 +7,5 @@ spring:
       resourceserver:
         jwt:
 #          jws-algorithms: HS256  # 대칭키
-          jws-algorithms: RS256   # 비 대칭키
+#          jws-algorithms: RS256   # 비 대칭키
+          jws-algorithms: RS512   # 비 대칭키 - jwt decoder에 사용 디폴트 값은 256임
