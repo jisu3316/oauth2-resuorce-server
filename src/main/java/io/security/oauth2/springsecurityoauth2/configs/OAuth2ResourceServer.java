@@ -1,9 +1,15 @@
 package io.security.oauth2.springsecurityoauth2.configs;
 
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.crypto.MACVerifier;
+import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jose.jwk.OctetSequenceKey;
+import com.nimbusds.jose.jwk.RSAKey;
 import io.security.oauth2.springsecurityoauth2.filter.authentication.JwtAuthenticationFilter;
 import io.security.oauth2.springsecurityoauth2.filter.authorization.JwtAuthorizationMacFilter;
+import io.security.oauth2.springsecurityoauth2.filter.authorization.JwtAuthorizationRsaFilter;
 import io.security.oauth2.springsecurityoauth2.siganture.MacSecuritySigner;
+import io.security.oauth2.springsecurityoauth2.siganture.RsaSecuritySigner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -26,13 +32,14 @@ import javax.servlet.Filter;
 @Configuration
 public class OAuth2ResourceServer {
 
-    private final MacSecuritySigner macSecuritySigner;
-    private final OctetSequenceKey octetSequenceKey;
+    // bean 등록으로 인해 필요가 없어졌다.
+//    private final MacSecuritySigner macSecuritySigner;
+//    private final OctetSequenceKey octetSequenceKey;
 
-    public OAuth2ResourceServer(MacSecuritySigner macSecuritySigner, OctetSequenceKey octetSequenceKey) {
-        this.macSecuritySigner = macSecuritySigner;
-        this.octetSequenceKey = octetSequenceKey;
-    }
+//    public OAuth2ResourceServer(MacSecuritySigner macSecuritySigner, OctetSequenceKey octetSequenceKey) {
+//        this.macSecuritySigner = macSecuritySigner;
+//        this.octetSequenceKey = octetSequenceKey;
+//    }
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -42,32 +49,55 @@ public class OAuth2ResourceServer {
         http.authorizeRequests((requests) -> requests.antMatchers("/").permitAll()
                 .anyRequest().authenticated());
         http.userDetailsService(userDetailsService());
-        http.addFilterBefore(jwtAuthenticationFilter(macSecuritySigner, octetSequenceKey), UsernamePasswordAuthenticationFilter.class);
-        //기존의 필터 기반 검증 방법
-//        http.addFilterBefore(jwtAuthorizationMacFilter(octetSequenceKey), UsernamePasswordAuthenticationFilter.class);
 
-        //jwtDecoder에 의한 검증 방법
-        http.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
+        // MAC 방식 필터 기반 검증 방법
+//        http.addFilterBefore(jwtAuthenticationFilter(null, null), UsernamePasswordAuthenticationFilter.class);
+//        http.addFilterBefore(jwtAuthorizationMacFilter(null), UsernamePasswordAuthenticationFilter.class);
+
+        // MAC 방식 jwtDecoder에 의한 검증 방법
+//        http.oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
+
+        // RSA 방식 필터에 기반 검증 방법
+        http.addFilterBefore(jwtAuthenticationFilter(null, null), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtAuthorizationRsaFilter(null), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
-    //기존의 필터 기반 검증방법
+    //MAC 필터 기반 검증방법
 //    @Bean
-//    public JwtAuthorizationMacFilter jwtAuthorizationMacFilter(OctetSequenceKey octetSequenceKey) {
-//        return new JwtAuthorizationMacFilter(octetSequenceKey);
+//    public JwtAuthorizationMacFilter jwtAuthorizationMacFilter(OctetSequenceKey octetSequenceKey) throws JOSEException {
+//        return new JwtAuthorizationMacFilter(new MACVerifier(octetSequenceKey.toSecretKey()));
 //    }
+
+
+    //MAC 필터 기반 방식
+//    @Bean
+//    public JwtAuthenticationFilter jwtAuthenticationFilter(MacSecuritySigner macSecuritySigner, OctetSequenceKey octetSequenceKey) throws Exception {
+//        JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(macSecuritySigner, octetSequenceKey);
+//        jwtAuthenticationFilter.setAuthenticationManager(authenticationManager(null));
+//        return jwtAuthenticationFilter;
+//    }
+
+
+    // RSA 필터 기반 검증방법 비 대칭키 방식이므로 퍼블릭키로 토큰을 검증한다.
+    @Bean
+    public JwtAuthorizationRsaFilter jwtAuthorizationRsaFilter(RSAKey rsaKey) throws JOSEException {
+        return new JwtAuthorizationRsaFilter(new RSASSAVerifier(rsaKey.toRSAPublicKey()));
+    }
+
+//    //RSA 필터 기반 방식
+    @Bean
+    public JwtAuthenticationFilter jwtAuthenticationFilter(RsaSecuritySigner rsaSecuritySigner, RSAKey rsaKey) throws Exception {
+        JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(rsaSecuritySigner, rsaKey);
+        jwtAuthenticationFilter.setAuthenticationManager(authenticationManager(null));
+        return jwtAuthenticationFilter;
+    }
+
 
     //인증해주는 곳 얘가 없으면 JwtAuthenticationFilter 생성을 못한다.
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
-    }
-
-    @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter(MacSecuritySigner macSecuritySigner, OctetSequenceKey octetSequenceKey) throws Exception {
-        JwtAuthenticationFilter jwtAuthenticationFilter = new JwtAuthenticationFilter(macSecuritySigner, octetSequenceKey);
-        jwtAuthenticationFilter.setAuthenticationManager(authenticationManager(null));
-        return jwtAuthenticationFilter;
     }
 
     @Bean
