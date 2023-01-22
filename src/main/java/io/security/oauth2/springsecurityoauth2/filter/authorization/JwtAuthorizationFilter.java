@@ -26,11 +26,12 @@ public abstract class JwtAuthorizationFilter extends OncePerRequestFilter {
 
     private final JWSVerifier jwsVerifier;
 
-    //이 필터는 공통클래스가아니고  MAC검증만하는 필터이므로 JWK로 안받아도된다.
+    //이 필터는 공통클래스가이므로 상위클래스로 받아 MAC, RSA 를 처리한다.
     public JwtAuthorizationFilter(JWSVerifier jwsVerifier) {
         this.jwsVerifier = jwsVerifier;
     }
 
+    // Bearer 토큰을 MAC, RSA 알고리즘에 의해 검증하며 검증 성공시 인증 및 인가를 처리하는 필터
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String header = request.getHeader("Authorization");
